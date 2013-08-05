@@ -14,7 +14,7 @@ trait AbstractPrinter extends CommonPrintUtils {
   import global._
 
   /**
-   * PrintingContext is passed around with all the print methods and contains 
+   * PrintingContext is passed around with all the print methods and contains
    * the context or environment for the current printing.
    */
   case class PrintingContext(ind: Indentation, changeSet: ChangeSet, parent: Tree, file: Option[SourceFile]) {

@@ -12,21 +12,21 @@ import tests.util.TestRefactoring
 import language.reflectiveCalls
 
 class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
-    
+
   def organize(pro: FileSet) = new OrganizeImportsRefatoring(pro) {
     val params = new RefactoringParameters(deps = refactoring.Dependencies.RecomputeAndModify, options = List())
   }.mkChanges
-  
+
   def organizeCleanup(groups: List[String])(pro: FileSet) = new OrganizeImportsRefatoring(pro) {
-    val params = new RefactoringParameters(deps = refactoring.Dependencies.RecomputeAndModify, 
+    val params = new RefactoringParameters(deps = refactoring.Dependencies.RecomputeAndModify,
         options = List(refactoring.SortImports, refactoring.GroupImports(groups)))
   }.mkChanges
-  
+
   def organizeWildcards(ws: Set[String])(pro: FileSet) = new OrganizeImportsRefatoring(pro) {
-    val params = new RefactoringParameters(deps = refactoring.Dependencies.RecomputeAndModify, 
+    val params = new RefactoringParameters(deps = refactoring.Dependencies.RecomputeAndModify,
         options = List(refactoring.SortImports, refactoring.AlwaysUseWildcards(ws)))
   }.mkChanges
-  
+
   @Test
   def wildcardImportIsNotExpanded = new FileSet {
     """
@@ -62,7 +62,7 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     """ becomes
     """
     package tests.importing
-    
+
     import scala.collection.mutable.{ListBuffer => LB, _}
 
     object Main {val lb = LB(1) }
@@ -97,7 +97,7 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     object Main
     """
   } applyRefactoring organize
-  
+
   @Test
   def sortAndGroup = new FileSet {
     """
@@ -106,7 +106,7 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
 
     object Main extends Map[String, String] {
       val l = ListBuffer(1,2,3)
-      
+
     }
     """ becomes
     """
@@ -116,11 +116,11 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
 
     object Main extends Map[String, String] {
       val l = ListBuffer(1,2,3)
-      
+
     }
     """
   } applyRefactoring organizeCleanup(List("java", "scala"))
-  
+
   @Test
   def importRemovesUnneeded = new FileSet {
     """
@@ -218,16 +218,16 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     }
     """
   } applyRefactoring organize
-  
+
   @Test
   def importMethodFromSamePackage = new FileSet {
-    
+
     addToCompiler("testimplicits", """
     package a.b.c
     object TestImplicits {
       implicit def stringToBytes(s: String): Array[Byte] = s.getBytes
     }""");
-    
+
     """
     package a.b.c
     import TestImplicits._
@@ -245,16 +245,16 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     }
     """
   } applyRefactoring organize
-  
+
   @Test
   def importFromSamePackage = new FileSet {
-    
+
     addToCompiler("first", """
     package mypackage
 
     class First
     """);
-    
+
     """
     package mypackage
 
@@ -272,17 +272,17 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     }
     """
   } applyRefactoring organize
-  
+
   @Test
   def importFromSameNestedPackage = new FileSet {
-    
+
     addToCompiler("first", """
     package mypackage
     package sub
 
     class First
     """);
-    
+
     """
     package mypackage
     package sub
@@ -302,7 +302,7 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     }
     """
   } applyRefactoring organize
-  
+
   @Test
   def severalScalaGroups = new FileSet {
     """
@@ -349,14 +349,14 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
 
       package object pkg {
         def f_pkg() = 1
-      }    
+      }
     """)
-    
+
     """
       package test2
-      
+
       import test.pkg
-      
+
       class ScalaClass {
         def f() {
           pkg.f_pkg
@@ -365,9 +365,9 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     """ becomes
     """
       package test2
-      
+
       import test.pkg
-      
+
       class ScalaClass {
         def f() {
           pkg.f_pkg
@@ -375,34 +375,34 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
       }
     """
   } applyRefactoring organize
-  
+
   @Test
   def importDependingOnImport = new FileSet {
     addToCompiler("Bar.scala", """
     package barr
-    
+
     object Bar {
       val instance = new Bar
-      
+
       def withInstance(f: Bar => Unit): Unit = ()
     }
-    
+
     class Bar
     """)
-    
+
     addToCompiler("Baz.scala", """
     package barr
-    
+
     object Baz {
       def baz = 2
     }
     """)
-    
+
     """
     package importDependingOnImport
     import barr.{Baz, Bar}
     import Bar.withInstance
-    
+
     class Foo {
       Baz.baz
       withInstance { _ => () }
@@ -410,24 +410,24 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     """ becomes
     """
     package importDependingOnImport
-    
+
     import barr.Baz
     import barr.Bar.withInstance
-    
+
     class Foo {
       Baz.baz
       withInstance { _ => () }
     }
     """
   } applyRefactoring organize
-  
+
   @Test
   def removeDuplicate = new FileSet {
     """
     package removeDuplicate
     import collection.mutable
     import collection.mutable
-    
+
     class Foo {
       val m = new mutable.HashSet[String]
     }
@@ -435,7 +435,7 @@ class OrganizeImportsRecomputeAndModifyTest extends OrganizeImportsBaseTest {
     """
     package removeDuplicate
     import collection.mutable
-    
+
     class Foo {
       val m = new mutable.HashSet[String]
     }
